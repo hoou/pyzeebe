@@ -4,6 +4,7 @@ from pyzeebe import (
     create_insecure_channel,
     create_secure_channel,
 )
+from pyzeebe.client.models import ProcessInstance
 
 # Create a zeebe client without credentials
 grpc_channel = create_insecure_channel(hostname="localhost", port=26500)
@@ -23,10 +24,10 @@ grpc_channel = create_camunda_cloud_channel(
 zeebe_client = ZeebeClient(grpc_channel)
 
 # Run a Zeebe instance process
-process_instance_key = await zeebe_client.run_process(bpmn_process_id="My zeebe process", variables={})
+process_instance: ProcessInstance = await zeebe_client.run_process(bpmn_process_id="My zeebe process", variables={})
 
 # Run a Zeebe process instance and receive the result
-process_instance_key, process_result = await zeebe_client.run_process_with_result(
+process_instance, process_result = await zeebe_client.run_process_with_result(
     bpmn_process_id="My zeebe process", timeout=10000
 )  # Will wait 10000 milliseconds (10 seconds)
 

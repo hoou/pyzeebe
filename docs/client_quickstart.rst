@@ -35,7 +35,7 @@ Run a Zeebe process instance
 
 .. code-block:: python
 
-    process_instance_key = await client.run_process("bpmn_process_id")
+    process_instance = await client.run_process("bpmn_process_id")
 
 
 Run a process with result
@@ -45,7 +45,7 @@ To run a process and receive the result directly:
 
 .. code-block:: python
 
-    process_instance_key, result = await client.run_process_with_result("bpmn_process_id")
+    process_instance, result = await client.run_process_with_result("bpmn_process_id")
 
     # result will be a dict
 

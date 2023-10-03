@@ -85,10 +85,10 @@ channel = create_insecure_channel(hostname="localhost", port=26500)
 zeebe_client = ZeebeClient(channel)
 
 # Run a Zeebe process instance
-process_instance_key = await zeebe_client.run_process(bpmn_process_id="My zeebe process", variables={})
+process_instance = await zeebe_client.run_process(bpmn_process_id="My zeebe process", variables={})
 
 # Run a process and receive the result
-process_instance_key, process_result = await zeebe_client.run_process_with_result(
+process_instance, process_result = await zeebe_client.run_process_with_result(
     bpmn_process_id="My zeebe process",
     timeout=10000
 )
