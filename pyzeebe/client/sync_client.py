@@ -4,6 +4,7 @@ from typing import Dict, List, Optional, Tuple
 import grpc
 
 from pyzeebe import ZeebeClient
+from pyzeebe.client.models import ProcessInstance
 
 
 class SyncZeebeClient:
@@ -11,7 +12,7 @@ class SyncZeebeClient:
         self.loop = asyncio.get_event_loop()
         self.client = ZeebeClient(grpc_channel, max_connection_retries)
 
-    def run_process(self, bpmn_process_id: str, variables: Optional[Dict] = None, version: int = -1) -> int:
+    def run_process(self, bpmn_process_id: str, variables: Optional[Dict] = None, version: int = -1) -> ProcessInstance:
         return self.loop.run_until_complete(self.client.run_process(bpmn_process_id, variables, version))
 
     def run_process_with_result(
@@ -21,7 +22,7 @@ class SyncZeebeClient:
         version: int = -1,
         timeout: int = 0,
         variables_to_fetch: Optional[List[str]] = None,
-    ) -> Tuple[int, Dict]:
+    ) -> Tuple[ProcessInstance, Dict]:
         return self.loop.run_until_complete(
             self.client.run_process_with_result(bpmn_process_id, variables, version, timeout, variables_to_fetch)
         )

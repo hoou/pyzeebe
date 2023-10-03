@@ -16,8 +16,8 @@ async def test_run_process(
 ):
     initial_amount_of_processes = process_stats.get_process_runs()
 
-    process_instance_key = await zeebe_client.run_process(process_name, process_variables)
-    await wait_for_process(process_instance_key, process_stats)
+    process_instance = await zeebe_client.run_process(process_name, process_variables)
+    await wait_for_process(process_instance.process_instance_key, process_stats)
 
     assert process_stats.get_process_runs() == initial_amount_of_processes + 1
 

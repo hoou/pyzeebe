@@ -5,6 +5,7 @@ import grpc
 import pytest
 from mock import AsyncMock, MagicMock, patch
 
+from pyzeebe.client.models import ProcessInstance
 from pyzeebe.errors import (
     InvalidJSONError,
     ProcessDefinitionHasNoStartEventError,
@@ -27,7 +28,7 @@ class TestCreateProcessInstance:
 
         response = await zeebe_adapter.create_process_instance(bpmn_process_id, version, {})
 
-        assert isinstance(response, int)
+        assert isinstance(response, ProcessInstance)
 
     async def test_raises_on_unkown_process(self, zeebe_adapter: ZeebeProcessAdapter):
         bpmn_process_id = str(uuid4())
@@ -65,11 +66,11 @@ class TestCreateProcessWithResult:
         version = randint(0, 10)
         grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
 
-        process_instance_key, _ = await zeebe_adapter.create_process_instance_with_result(
+        process_instance, _ = await zeebe_adapter.create_process_instance_with_result(
             bpmn_process_id=bpmn_process_id, variables={}, version=version, timeout=0, variables_to_fetch=[]
         )
 
-        assert isinstance(process_instance_key, int)
+        assert isinstance(process_instance, ProcessInstance)
 
     async def test_variables_type_is_dict(self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock):
         bpmn_process_id = str(uuid4())
@@ -106,13 +107,13 @@ class TestCancelProcess:
         bpmn_process_id = str(uuid4())
         version = randint(0, 10)
         grpc_servicer.mock_deploy_process(bpmn_process_id, version, [])
-        process_instance_key = await zeebe_adapter.create_process_instance(
+        process_instance = await zeebe_adapter.create_process_instance(
             bpmn_process_id=bpmn_process_id, variables={}, version=version
         )
 
-        await zeebe_adapter.cancel_process_instance(process_instance_key)
+        await zeebe_adapter.cancel_process_instance(process_instance.process_instance_key)
 
-        assert process_instance_key not in grpc_servicer.active_processes.keys()
+        assert process_instance.process_instance_key not in grpc_servicer.active_processes.keys()
 
     async def test_raises_on_already_cancelled_process(
         self, zeebe_adapter: ZeebeProcessAdapter, grpc_servicer: GatewayMock

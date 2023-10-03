@@ -5,6 +5,7 @@ import pytest
 from mock import AsyncMock
 
 from pyzeebe import SyncZeebeClient
+from pyzeebe.client.models import ProcessInstance
 from pyzeebe.errors import ProcessDefinitionNotFoundError
 
 # Pytest doesn't play well with loop.run_until_complete unless the test has a
@@ -22,9 +23,9 @@ class TestRunProcess:
     def test_run_process_returns_int(self, sync_zeebe_client: SyncZeebeClient, deployed_process):
         bpmn_process_id, version = deployed_process
 
-        process_instance_key = sync_zeebe_client.run_process(bpmn_process_id, version=version)
+        process_instance = sync_zeebe_client.run_process(bpmn_process_id, version=version)
 
-        assert isinstance(process_instance_key, int)
+        assert isinstance(process_instance, ProcessInstance)
 
     def test_raises_process_definition_not_found_error_for_invalid_process_id(self, sync_zeebe_client: SyncZeebeClient):
         with pytest.raises(ProcessDefinitionNotFoundError):
@@ -35,9 +36,9 @@ class TestRunProcessWithResult:
     def test_run_process_with_result_instance_key_is_int(self, sync_zeebe_client: SyncZeebeClient, deployed_process):
         bpmn_process_id, version = deployed_process
 
-        process_instance_key, _ = sync_zeebe_client.run_process_with_result(bpmn_process_id, {}, version)
+        process_instance, _ = sync_zeebe_client.run_process_with_result(bpmn_process_id, {}, version)
 
-        assert isinstance(process_instance_key, int)
+        assert isinstance(process_instance, ProcessInstance)
 
     def test_run_process_with_result_output_variables_are_as_expected(
         self, sync_zeebe_client: SyncZeebeClient, deployed_process
@@ -57,13 +58,13 @@ class TestRunProcessWithResult:
 class TestCancelProcessInstance:
     def test_cancel_process_instance(self, sync_zeebe_client: SyncZeebeClient, deployed_process):
         bpmn_process_id, version = deployed_process
-        process_instance_key = sync_zeebe_client.run_process(
+        process_instance = sync_zeebe_client.run_process(
             bpmn_process_id=bpmn_process_id, variables={}, version=version
         )
 
-        returned_process_instance_key = sync_zeebe_client.cancel_process_instance(process_instance_key)
+        returned_process_instance_key = sync_zeebe_client.cancel_process_instance(process_instance.process_instance_key)
 
-        assert returned_process_instance_key == process_instance_key
+        assert returned_process_instance_key == process_instance.process_instance_key
 
 
 class TestDeployProcess:

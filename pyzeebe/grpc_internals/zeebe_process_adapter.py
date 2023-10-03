@@ -13,6 +13,7 @@ from zeebe_grpc.gateway_pb2 import (
     ProcessRequestObject,
 )
 
+from pyzeebe.client.models import ProcessInstance
 from pyzeebe.errors import (
     InvalidJSONError,
     ProcessDefinitionHasNoStartEventError,
@@ -26,7 +27,7 @@ from pyzeebe.grpc_internals.zeebe_adapter_base import ZeebeAdapterBase
 
 
 class ZeebeProcessAdapter(ZeebeAdapterBase):
-    async def create_process_instance(self, bpmn_process_id: str, version: int, variables: Dict) -> int:
+    async def create_process_instance(self, bpmn_process_id: str, version: int, variables: Dict) -> ProcessInstance:
         try:
             response = await self._gateway_stub.CreateProcessInstance(
                 CreateProcessInstanceRequest(
@@ -35,11 +36,17 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
             )
         except grpc.aio.AioRpcError as grpc_error:
             await self._create_process_errors(grpc_error, bpmn_process_id, version, variables)
-        return response.processInstanceKey
+        else:
+            return ProcessInstance(
+                bpmn_process_id=response.bpmnProcessId,
+                process_definition_key=response.processDefinitionKey,
+                process_instance_key=response.processInstanceKey,
+                version=response.version,
+            )
 
     async def create_process_instance_with_result(
         self, bpmn_process_id: str, version: int, variables: Dict, timeout: int, variables_to_fetch
-    ) -> Tuple[int, Dict]:
+    ) -> Tuple[ProcessInstance, Dict]:
         try:
             response = await self._gateway_stub.CreateProcessInstanceWithResult(
                 CreateProcessInstanceWithResultRequest(
@@ -52,7 +59,13 @@ class ZeebeProcessAdapter(ZeebeAdapterBase):
             )
         except grpc.aio.AioRpcError as grpc_error:
             await self._create_process_errors(grpc_error, bpmn_process_id, version, variables)
-        return response.processInstanceKey, json.loads(response.variables)
+        else:
+            return ProcessInstance(
+                bpmn_process_id=response.bpmnProcessId,
+                process_definition_key=response.processDefinitionKey,
+                process_instance_key=response.processInstanceKey,
+                version=response.version,
+            ), json.loads(response.variables)
 
     async def _create_process_errors(
         self, grpc_error: grpc.aio.AioRpcError, bpmn_process_id: str, version: int, variables: Dict
